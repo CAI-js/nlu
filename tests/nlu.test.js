@@ -113,22 +113,22 @@ describe('NLU', () => {
   describe('Prepare', () => {
     test('Prepare will generate an array of tokens', () => {
       const nlu = new Nlu();
-      const input = 'Allí hay un ratón';
+      const input = 'Alli hay un raton';
       const actual = nlu.prepare(input);
       expect(actual).toEqual({
-        allí: 1,
+        alli: 1,
         hay: 1,
         un: 1,
-        ratón: 1,
+        raton: 1,
       });
     });
     test('Prepare can process an array of strings', () => {
       const nlu = new Nlu();
-      const input = ['Allí hay un ratón', 'y vino el señor doctor'];
+      const input = ['Alli hay un raton', 'y vino el senor doctor'];
       const actual = nlu.prepare(input);
       expect(actual).toEqual([
-        { allí: 1, hay: 1, un: 1, ratón: 1 },
-        { y: 1, vino: 1, el: 1, señor: 1, doctor: 1 },
+        { alli: 1, hay: 1, un: 1, raton: 1 },
+        { y: 1, vino: 1, el: 1, senor: 1, doctor: 1 },
       ]);
     });
   });
