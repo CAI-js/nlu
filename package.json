@@ -30,7 +30,7 @@
   "license": "MIT",
   "dependencies": {
     "@caijs/container": "^1.0.2",
-    "@caijs/lang-def": "^1.0.1"
+    "@caijs/lang-def": "^1.0.2"
   },
   "devDependencies": {
     "coveralls": "^3.0.9",
