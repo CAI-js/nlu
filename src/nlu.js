@@ -22,6 +22,9 @@ class Nlu {
     if (this.settings.useNoneFeature === undefined) {
       this.settings.useNoneFeature = false;
     }
+    if (this.settings.filterZeros === undefined) {
+      this.settings.filterZeros = true;
+    }
   }
 
   ensurePlugins() {
@@ -106,9 +109,14 @@ class Nlu {
     }
   }
 
+  calculateIntentArray() {
+    this.intentsArr = Object.keys(this.intents);
+  }
+
   train(corpus) {
     const processed = this.prepareCorpus(corpus);
     this.addNoneFeature(processed);
+    this.calculateIntentArray();
     this.neuralNetwork = new NeuralNetwork(this.settings);
     return this.neuralNetwork.train(processed);
   }
@@ -133,8 +141,59 @@ class Nlu {
     return features;
   }
 
+  innerProcess(features) {
+    if (!this.neuralNetwork) {
+      return { None: 1 };
+    }
+    return this.neuralNetwork.run(features);
+  }
+
+  someSimilar(tokensA, tokensB) {
+    for (let i = 0; i < tokensB.length; i += 1) {
+      if (tokensA[tokensB[i]]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getWhitelist(tokens) {
+    const result = {};
+    const features = Object.keys(tokens);
+    for (let i = 0; i < features.length; i += 1) {
+      const intents = this.featuresToIntent[features[i]];
+      if (intents) {
+        for (let j = 0; j < intents.length; j += 1) {
+          result[intents[j]] = 1;
+        }
+      }
+    }
+    return result;
+  }
+
+  convertAndFilter(features, classifications) {
+    const whitelist = this.getWhitelist(features);
+    const result = [];
+    let total = 0;
+    for (let i = 0; i < this.intentsArr.length; i += 1) {
+      const intent = this.intentsArr[i];
+      const score =
+        whitelist[intent] || intent === 'None' ? classifications[intent] : 0;
+      if (score !== undefined && (score > 0 || !this.settings.filterZeros)) {
+        const squareScore = score ** 2;
+        total += squareScore;
+        result.push({ intent, score: squareScore });
+      }
+    }
+    if (total > 0) {
+      for (let i = 0; i < result.length; i += 1) {
+        result[i].score /= total;
+      }
+    }
+    return result.sort((a, b) => b.score - a.score);
+  }
+
   process(text) {
-    // TODO: WIP
     if (this.neuralNetwork) {
       let tokens = this.prepare(text);
       if (this.spellchecker && this.settings.spellcheck) {
@@ -144,9 +203,10 @@ class Nlu {
         );
       }
       const features = this.textToFeatures(tokens);
-      return features;
+      const classifications = this.innerProcess(features);
+      return this.convertAndFilter(features, classifications);
     }
-    return undefined;
+    return [{ intent: 'None', score: 1 }];
   }
 }
 

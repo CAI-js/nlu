@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "lintfix": "eslint --fix .",
     "test": "eslint --fix . && jest --silent --coverage --maxWorkers=4 .",
-    "bench": "node ./bench"
+    "bench": "node ./bench",
+    "browserdist": "browserify ./meh.js | terser --compress --mangle > ./bundle.js"
   },
   "author": {
     "email": "jseijas@gmail.com",

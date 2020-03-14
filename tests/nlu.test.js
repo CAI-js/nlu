@@ -144,4 +144,31 @@ describe('NLU', () => {
       });
     });
   });
+
+  describe('Add None Feature', () => {
+    test('It should add a nonefeature input labeled as None', () => {
+      const nlu = new Nlu({ useNoneFeature: true });
+      const input = [];
+      nlu.addNoneFeature(input);
+      expect(input).toHaveLength(1);
+      expect(input[0]).toEqual({
+        input: { nonefeature: 1 },
+        output: { None: 1 },
+      });
+    });
+    test('It usenonefeature is false, do not modify corpus', () => {
+      const nlu = new Nlu({ useNoneFeature: false });
+      const input = [];
+      nlu.addNoneFeature(input);
+      expect(input).toHaveLength(0);
+    });
+  });
+
+  describe('Train', () => {
+    test('It can train a corpus', async () => {
+      const nlu = new Nlu();
+      const status = await nlu.train(corpus);
+      expect(status.iterations).toEqual(26);
+    });
+  });
 });
